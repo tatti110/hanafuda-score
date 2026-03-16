@@ -146,7 +146,7 @@ function decrease(type){
       </div>
       <div class="buttons">
         <button @click="calcScore">点数計算</button>
-        <button @click="reset">リセット</button>
+        <button @click="reset">得点リセット</button>
       </div>
     <h2 class="score">合計 {{ score }} 点</h2>
   </div>
