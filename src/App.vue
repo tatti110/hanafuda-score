@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue"
+import { ref, computed } from "vue"
 
 const cards = ref({
   hikari: 0,
@@ -27,38 +27,42 @@ const yaku = ref({
   ameshima:false
 })
 
-const score = ref(0)
+// 役リスト
+const yakuList = [
+  {key:"goko", name:"五光", score:200},
+  {key:"shiko", name:"四光", score:60},
+  {key:"akatan", name:"赤短", score:40},
+  {key:"aotan", name:"青短", score:40},
+  {key:"nanatan", name:"七短", score:40},
+  {key:"rokutan", name:"六短", score:30},
+  {key:"omoteSugawara", name:"表菅原", score:30},
+  {key:"nomi", name:"のみ", score:30},
+  {key:"matukiri", name:"松桐坊主", score:20},
+  {key:"inoshikacho", name:"猪鹿蝶", score:20},
+  {key:"tsukimi", name:"月見で一杯", score:20},
+  {key:"hanami", name:"花見で一杯", score:20},
+  {key:"kusa", name:"くさ", score:20},
+  {key:"hujishima", name:"藤島", score:20},
+  {key:"kirishima", name:"桐島", score:20},
+  {key:"ameshima", name:"雨島", score:20}
+]
 
 // 役と札の計算
-function calcScore(){
+const score = computed(() => {
 
-  let cardScore =
-  cards.value.hikari * 20 +
-  cards.value.tane * 10 +
-  cards.value.tan * 5 +
-  cards.value.kasu * 1
+  const cardScore =
+    cards.value.hikari * 20 +
+    cards.value.tane * 10 +
+    cards.value.tan * 5 +
+    cards.value.kasu
 
-  let yakuScore = 0
+  const yakuScore = yakuList.reduce((sum,y)=>{
+    return yaku.value[y.key] ? sum + y.score : sum
+  },0)
 
-  if(yaku.value.goko) yakuScore += 200
-  if(yaku.value.shiko) yakuScore += 60
-  if(yaku.value.akatan) yakuScore += 40
-  if(yaku.value.aotan) yakuScore += 40
-  if(yaku.value.nanatan) yakuScore += 40
-  if(yaku.value.rokutan) yakuScore += 30
-  if(yaku.value.omoteSugawara) yakuScore += 30
-  if(yaku.value.nomi) yakuScore += 30
-  if(yaku.value.inoshikacho) yakuScore += 20
-  if(yaku.value.matukiri) yakuScore += 20
-  if(yaku.value.tsukimi) yakuScore += 20
-  if(yaku.value.hanami) yakuScore += 20
-  if(yaku.value.kusa) yakuScore += 20
-  if(yaku.value.hujishima) yakuScore += 20
-  if(yaku.value.kirishima) yakuScore += 20
-  if(yaku.value.ameshima) yakuScore += 20
+  return cardScore + yakuScore
+})
 
-  score.value = cardScore + yakuScore
-}
 
 // 点数のリセット
 function reset(){
@@ -91,73 +95,69 @@ function decrease(type){
 
 <template>
   <div class="container">
-    <h2>花合わせ 点数計算</h2>
-    <h2>札</h2>
+    <!-- <h2>花合わせ 点数計算</h2> -->
+    <div class="section-title">札</div>
       <div class="card-input">
         <label>光札</label>
         <div class="counter">
-          <button @click="decrease('hikari')">−</button>
+          <button @pointerdown="decrease('hikari')">−</button>
             <span>{{ cards.hikari }}枚</span>
-          <button @click="increase('hikari')">＋</button>
+          <button @pointerdown="increase('hikari')">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>タネ</label>
         <div class="counter">
-          <button @click="decrease('tane')">−</button>
+          <button @pointerdown="decrease('tane')">−</button>
             <span>{{ cards.tane }}枚</span>
-          <button @click="increase('tane')">＋</button>
+          <button @pointerdown="increase('tane')">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>短冊</label>
         <div class="counter">
-          <button @click="decrease('tan')">−</button>
+          <button @pointerdown="decrease('tan')">−</button>
             <span>{{ cards.tan }}枚</span>
-          <button @click="increase('tan')">＋</button>
+          <button @pointerdown="increase('tan')">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>カス</label>
         <div class="counter">
-          <button @click="decrease('kasu')">−</button>
+          <button @pointerdown="decrease('kasu')">−</button>
           <span>{{ cards.kasu }}枚</span>
-          <button @click="increase('kasu')">＋</button>
+          <button @pointerdown="increase('kasu')">＋</button>
         </div>
       </div>
-    <h2>役</h2>
+    <div class="section-title">役</div>
       <div class="yaku-grid">
-        <label><input type="checkbox" v-model="yaku.goko">五光(200)</label>
-        <label><input type="checkbox" v-model="yaku.shiko">四光(60)</label>
-        <label><input type="checkbox" v-model="yaku.akatan">赤短(40)</label>
-        <label><input type="checkbox" v-model="yaku.aotan">青短(40)</label>
-        <label><input type="checkbox" v-model="yaku.nanatan">七短(40)</label>
-        <label><input type="checkbox" v-model="yaku.rokutan">六短(30)</label>
-        <label><input type="checkbox" v-model="yaku.omoteSugawara">表菅原(30)</label>
-        <label><input type="checkbox" v-model="yaku.nomi">のみ(30)</label>
-        <label><input type="checkbox" v-model="yaku.matukiri">松桐坊主(20)</label>
-        <label><input type="checkbox" v-model="yaku.inoshikacho">猪鹿蝶(20)</label>
-        <label><input type="checkbox" v-model="yaku.tsukimi">月見で一杯(20)</label>
-        <label><input type="checkbox" v-model="yaku.hanami">花見で一杯(20)</label>
-        <label><input type="checkbox" v-model="yaku.kusa">くさ(20)</label>
-        <label><input type="checkbox" v-model="yaku.hujishima">藤島(20)</label>
-        <label><input type="checkbox" v-model="yaku.kirishima">桐島(20)</label>
-        <label><input type="checkbox" v-model="yaku.ameshima">雨島(20)</label>
+        <div
+          v-for="y in yakuList"
+          :key="y.key"
+          class="yaku-card"
+          :class="{active:yaku[y.key]}"
+          @click="yaku[y.key] = !yaku[y.key]"
+        >
+          <span class="yaku-name">{{ y.name }}</span>
+          <span class="yaku-score">{{ y.score }}</span>
+        </div>
       </div>
+    <div class="score">合計 {{ score }} 点</div>
       <div class="buttons">
-        <button @click="calcScore">点数計算</button>
         <button @click="reset">得点リセット</button>
       </div>
-    <h2 class="score">合計 {{ score }} 点</h2>
   </div>
 </template>
 
 <style>
+*{
+  touch-action: manipulation;
+}
 
 .container{
  max-width:400px;
  margin:auto;
- padding:20px;
+ padding:0px;
  font-family:sans-serif;
 }
 
@@ -190,35 +190,68 @@ function decrease(type){
 }
 
 input{
- width:20px;
+ width:30px;
+ height: 30px;
  font-size:18px;
 }
 
 .yaku-grid{
  display:grid;
- grid-template-columns:1fr 1fr;
+ grid-template-columns:1fr 1fr 1fr 1fr;
  gap:10px;
+
+ margin-left:-20px;
+ margin-right:-20px;
 }
 
 .yaku-grid label{
  display:flex;
  align-items:center;
  justify-content:flex-start;
- width:230px;
+ width:100%;
  gap:8px;
  text-align:left;
+}
+
+.section-title{
+ font-size:20px;
+ font-weight:bold;
+ margin:10px 0 6px;
 }
 
 button{
  width:100%;
  font-size:18px;
  padding:12px;
- margin-bottom:10px;
+ margin:10px 0;
 }
 
 .score{
  text-align:center;
  font-size:28px;
+ font-weight: bold;
+ margin-top: 20px;
+}
+
+.yaku-card{
+ border:1px solid #ccc;
+ border-radius:10px;
+ padding:0;
+ text-align:center;
+ font-size:14px;
+ cursor:pointer;
+ width: 80px;
+ height: 50px;
+ display: flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+}
+
+.yaku-card.active{
+ background:#ffe9a8;
+ border:1px solid orange;
+ font-weight:bold;
 }
 
 </style>
