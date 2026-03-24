@@ -63,6 +63,41 @@ const score = computed(() => {
   return cardScore + yakuScore
 })
 
+// 役の無効化判定
+function isDisabled(key) {
+  if (yaku.value.goko && (key === 'shiko' || key === 'omoteSugawara')) {
+    return true
+  }
+  if (yaku.value.shiko && key === 'omoteSugawara') return true
+  if (yaku.value.nanatan && key === 'rokutan') return true
+  if (yaku.value.nomi && (key === 'hanami' || key === 'tsukimi')) return true
+  return false
+}
+
+// 役の切り替え
+function toggleYaku(key) {
+  if (isDisabled(key)) return
+  yaku.value[key] = !yaku.value[key]
+  
+  // 五光が選択された場合、四光と表菅原をオフにする
+  if (key === 'goko' && yaku.value.goko) {
+    yaku.value.shiko = false
+    yaku.value.omoteSugawara = false
+  }
+  // 四光が選択された場合、表菅原をオフにする
+  if (key === 'shiko' && yaku.value.shiko) {
+    yaku.value.omoteSugawara = false
+  }
+  // 七短が選択された場合、六短をオフにする
+  if (key === 'nanatan' && yaku.value.nanatan) {
+    yaku.value.rokutan = false
+  }
+  // のみが選択された場合、花見と月見をオフにする
+  if (key === 'nomi' && yaku.value.nomi) {
+    yaku.value.hanami = false
+    yaku.value.tsukimi = false
+  }
+}
 
 // 点数のリセット
 function reset(){
@@ -77,12 +112,20 @@ function reset(){
     yaku.value[k]=false
   })
 
-  score.value = 0
+}
+
+const limits = {
+  hikari: 5,
+  tane: 9,
+  tan: 10,
+  kasu: 24
 }
 
 // 札の増減
 function increase(type){
-  cards.value[type]++
+  if (cards.value[type] < limits[type]) {
+    cards.value[type]++
+  }
 }
 
 function decrease(type){
@@ -100,33 +143,33 @@ function decrease(type){
       <div class="card-input">
         <label>光札</label>
         <div class="counter">
-          <button @pointerdown="decrease('hikari')">−</button>
+          <button @pointerdown="decrease('hikari')" :disabled="cards.hikari <= 0">−</button>
             <span>{{ cards.hikari }}枚</span>
-          <button @pointerdown="increase('hikari')">＋</button>
+          <button @pointerdown="increase('hikari')" :disabled="cards.hikari >= limits.hikari">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>タネ</label>
         <div class="counter">
-          <button @pointerdown="decrease('tane')">−</button>
+          <button @pointerdown="decrease('tane')" :disabled="cards.tane <= 0">−</button>
             <span>{{ cards.tane }}枚</span>
-          <button @pointerdown="increase('tane')">＋</button>
+          <button @pointerdown="increase('tane')" :disabled="cards.tane >= limits.tane">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>短冊</label>
         <div class="counter">
-          <button @pointerdown="decrease('tan')">−</button>
+          <button @pointerdown="decrease('tan')" :disabled="cards.tan <= 0">−</button>
             <span>{{ cards.tan }}枚</span>
-          <button @pointerdown="increase('tan')">＋</button>
+          <button @pointerdown="increase('tan')" :disabled="cards.tan >= limits.tan">＋</button>
         </div>
       </div>
       <div class="card-input">
         <label>カス</label>
         <div class="counter">
-          <button @pointerdown="decrease('kasu')">−</button>
+          <button @pointerdown="decrease('kasu')" :disabled="cards.kasu <= 0">−</button>
           <span>{{ cards.kasu }}枚</span>
-          <button @pointerdown="increase('kasu')">＋</button>
+          <button @pointerdown="increase('kasu')" :disabled="cards.kasu >= limits.kasu">＋</button>
         </div>
       </div>
     <div class="section-title">役</div>
@@ -135,8 +178,8 @@ function decrease(type){
           v-for="y in yakuList"
           :key="y.key"
           class="yaku-card"
-          :class="{active:yaku[y.key]}"
-          @click="yaku[y.key] = !yaku[y.key]"
+          :class="{active:yaku[y.key], disabled:isDisabled(y.key)}"
+          @click="toggleYaku(y.key)"
         >
           <span class="yaku-name">{{ y.name }}</span>
           <span class="yaku-score">{{ y.score }}</span>
@@ -150,8 +193,15 @@ function decrease(type){
 </template>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+
 *{
   touch-action: manipulation;
+}
+
+body {
+  background-color: #fffce6;
+  margin: 0;
 }
 
 .container{
@@ -165,6 +215,7 @@ function decrease(type){
  margin-bottom:10px;
  display:flex;
  justify-content:space-between;
+ align-items:center;
 }
 
 .counter{
@@ -217,6 +268,7 @@ input{
  font-size:20px;
  font-weight:bold;
  margin:10px 0 6px;
+ font-family: "Yuji Syuku", serif;
 }
 
 button{
@@ -231,6 +283,7 @@ button{
  font-size:28px;
  font-weight: bold;
  margin-top: 20px;
+ font-family: "Yuji Syuku", serif;
 }
 
 .yaku-card{
@@ -246,12 +299,25 @@ button{
  flex-direction:column;
  justify-content:center;
  align-items:center;
+ background-color: #fff;
 }
 
 .yaku-card.active{
  background:#ffe9a8;
  border:1px solid orange;
  font-weight:bold;
+}
+
+.yaku-card.disabled {
+  opacity: 0.5;
+  background-color: #ddd;
+  cursor: not-allowed;
+  border-color: #ccc;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 </style>
